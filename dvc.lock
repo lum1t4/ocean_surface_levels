@@ -1,0 +1,34 @@
+schema: '2.0'
+stages:
+  download:
+    cmd: python scripts/download.py --src cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D
+      --dst data/raw
+    deps:
+    - path: scripts/download.py
+      hash: md5
+      md5: 0a1b4345fd2c270e902e0eff7920c235
+      size: 937
+    outs:
+    - path: data/raw/SEALEVEL_EUR_PHY_L4_NRT_008_060
+      hash: md5
+      md5: 61c0ce38cf592960503e8b404ab9e58e.dir
+      size: 1892631755
+      nfiles: 1060
+  aggregate:
+    cmd: python scripts/aggregate.py --src data/raw/SEALEVEL_EUR_PHY_L4_NRT_008_060
+      --dst data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
+    deps:
+    - path: data/raw/SEALEVEL_EUR_PHY_L4_NRT_008_060
+      hash: md5
+      md5: 61c0ce38cf592960503e8b404ab9e58e.dir
+      size: 1892631755
+      nfiles: 1060
+    - path: scripts/aggregate.py
+      hash: md5
+      md5: b45cc74f7b0e30a217732eae5483519f
+      size: 1057
+    outs:
+    - path: data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
+      hash: md5
+      md5: 6facf6d085e7f564a209fca466dbfda3
+      size: 1537250628
