@@ -1,9 +1,51 @@
-# Provide highly accurate approximations of ocean surface currents using satellite data
+# OSL - Ocean Surface Currents Forecasting
 
-### Objective:
-Develop a predictive model to forecast ocean surface currents (specifically, the geostrophic components derived from altimetry data) with enough accuracy to capture day-to-day changes. This forecast should ideally capture both the spatial and temporal dynamics of ocean currents in the European Seas.
+**Objective**: Develop a predictive model to forecast ocean surface currents with enough accuracy to capture day-to-day changes. This forecast should ideally capture both the spatial and temporal dynamics of ocean currents in the European Seas.
 
-### Background:
+Questions to consider:
+- The model should be able to predict the geostrophic velocity components (ugosa, vgosa) based on the Sea Level Anomaly (SLA) and other relevant variables?
+- should predict the SLA on the next sample?
+
+## Getting started
+
+### Install
+This project uses uv to handle dependencies so you can install it with:
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+Official documentation can be found here: [UV docs](https://docs.astral.sh/uv/getting-started/installation/)
+
+After installing uv, you can create a new environment with the following command `uv sync` in the root of the project. This will create a new environment with all the dependencies specified in the `pyproject.toml` file than you can activate the env as any python virtual env.
+
+### Data
+To fetch the dataset, this project uses dvc to handle data and its processing pipeline. In summary to get everything up and running you need just to `dvc repro`
+
+### Project Organization
+```bash
+├── README.md          <- The top-level README for developers using this project.
+├── LICENSE            <- The license for the project
+├── data
+│   ├── external       <- Data from third party sources.
+│   ├── interim        <- Intermediate data that has been transformed.
+│   ├── processed      <- The final, canonical data sets for modeling.
+│   └── raw            <- The original, immutable data dump.
+│
+├── pyproject.toml     <- Project configuration file with package metadata
+│                         and configuration for tools like black
+│
+├── references         <- Data dictionaries, manuals, and all other explanatory materials.
+│
+├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
+│   └── figures        <- Generated graphics and figures to be used in reporting
+│
+└── osl   <- Source code for use in this project.
+│
+└── dvc.yaml       <- DVC pipeline file that defines the stages of the pipeline
+│
+└── dvc.lock       <- DVC lock file that stores the state of the pipelineì
+```
+
+## Background:
 Data Source: Satellite altimetry products (e.g., SLA, ugosa, vgosa) that provide gridded fields of sea surface height and derived velocities.
 Challenge: The data are spatially distributed and temporally evolving. Predicting the changes in ocean currents involves modeling complex physical processes such as geostrophic balance, mesoscale eddies, and possibly submesoscale features.
 
@@ -39,7 +81,7 @@ https://data.marine.copernicus.eu/product/SEALEVEL_EUR_PHY_L4_NRT_008_060/descri
 
 ### Evaluation
 
-For a forecast task of ocean surface currents, consider the following evaluation metrics:
+For a forecast task of ocean surface currents the follwing metrics could be used to evaluate the model performance:
 
 - Root Mean Squared Error (RMSE): Measures the average magnitude of the error between predicted and observed current components.
 - Mean Absolute Error (MAE): Provides a robust measure of average error magnitude, less sensitive to outliers than RMSE.
@@ -57,24 +99,20 @@ For a forecast task of ocean surface currents, consider the following evaluation
 - Spatial Metrics (if forecasting spatial fields):
   - Spatial Correlation: To assess how well the spatial patterns in the prediction match the observations.
   - Pattern Correlation and Mean Bias Error: To evaluate any systematic spatial discrepancies.
-  
+ 
 - Spectral Score: Energy at different spatial scales
 - Eddy Detection Rate: Using SLA-based vortex detection
 - Trajectory Simulation: Compare virtual drifter paths
 
 
-
-### References
+## References
 - [Machine-Learning Mesoscale and Submesoscale Surface Dynamics from Lagrangian Ocean Drifter Trajectories
 ](https://journals.ametsoc.org/view/journals/phoc/50/5/jpo-d-19-0238.1.xml)
 
-- [DriftNet](https://github.com/CIA-Oceanix/DriftNet/tree/main)
+- [DriftNet - A novel fully-convolutional architecture inspired from the Eulerian Fokker-Planck representation of Lagrangian dynamics at sea surface](https://github.com/CIA-Oceanix/DriftNet/tree/main)
 - [Relative Fluid Stretching and Rotation for Sparse Trajectory Observations](https://github.com/EncinasBartos/Relative-Fluid-Stretching-and-Rotation-for-Sparse-Trajectory-Observations/tree/main)
-
-
-### LLM assisted research in this project
-- [ChatGPT](https://chatgpt.com/c/67bbd338-9018-8000-8782-5aa83f300419)
-- [Perplexity](https://www.perplexity.ai/search/machine-learning-mesoscale-and-dZCx0OEqTq6vwdVF1setPA)
-- [DeepSeek](https://chat.deepseek.com/a/chat/s/01c04727-fa4c-46bc-be87-1a39b82f07cd)
-- [Grok](https://x.com/i/grok?focus=1&conversation=1893844088757367096)
-- [Claude](https://claude.ai/chat/c5360fea-d742-45b3-9cf8-d5bddec36238)
+- [A Deep Framework for Eddy Detection and Tracking From Satellite Sea Surface Height Data (2020)](https://ieeexplore.ieee.org/document/9247537)
+- [Neural Network Training for the Detection and Classification of Oceanic Mesoscale Eddies (2020)](https://www.mdpi.com/2072-4292/12/16/2625)
+- [A lightweight deep learning model for ocean eddy detection (2023).](https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2023.1266452/full)
+- [Multicore structures and the splitting and merging of eddies in global oceans from satellite altimeter data (2019)](https://os.copernicus.org/articles/15/413/2019/)
+- [EddyGraph: The Tracking of Mesoscale Eddy Splitting and Merging Events in the Northwest Pacific Ocean (2021)](https://www.mdpi.com/2072-4292/13/17/3435)
