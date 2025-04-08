@@ -10,7 +10,7 @@ authors = [
   { name = "Gianluca Calò" },
 ]
 
-readme = "readme.md"
+readme = "README.md"
 classifiers = [
     "Programming Language :: Python :: 3",
     
