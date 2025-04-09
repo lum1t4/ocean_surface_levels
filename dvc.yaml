@@ -12,3 +12,10 @@ stages:
       - data/raw/SEALEVEL_EUR_PHY_L4_NRT_008_060
     outs:
       - data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
+  plot_video:
+    cmd: python scripts/plot_video.py --src data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc --dst reports/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.mp4
+    deps:
+      - scripts/plot_video.py
+      - data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
+    outs:
+      - reports/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.mp4

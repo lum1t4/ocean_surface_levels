@@ -32,3 +32,20 @@ stages:
       hash: md5
       md5: 6facf6d085e7f564a209fca466dbfda3
       size: 1537250628
+  plot_video:
+    cmd: python scripts/plot_video.py --src data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
+      --dst reports/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.mp4
+    deps:
+    - path: data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
+      hash: md5
+      md5: 6facf6d085e7f564a209fca466dbfda3
+      size: 1537250628
+    - path: scripts/plot_video.py
+      hash: md5
+      md5: 2ca308a68c84b6242545120d256f238f
+      size: 1417
+    outs:
+    - path: reports/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.mp4
+      hash: md5
+      md5: ff04ee219f68c8f615009f353d551ade
+      size: 3656079
