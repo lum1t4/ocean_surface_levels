@@ -116,3 +116,9 @@ For a forecast task of ocean surface currents the follwing metrics could be used
 - [A lightweight deep learning model for ocean eddy detection (2023).](https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2023.1266452/full)
 - [Multicore structures and the splitting and merging of eddies in global oceans from satellite altimeter data (2019)](https://os.copernicus.org/articles/15/413/2019/)
 - [EddyGraph: The Tracking of Mesoscale Eddy Splitting and Merging Events in the Northwest Pacific Ocean (2021)](https://www.mdpi.com/2072-4292/13/17/3435)
+
+
+## Glossary
+
+- **Mesosclae**: Mid-size oceanic features, typically ranging from 10 to 100 km in diameter, such as eddies, currents, and fronts
+- **Submesoscale**: Smaller oceanic features, typically ranging from 1 to 10 km, that can influence the dynamics of larger mesoscale features.
