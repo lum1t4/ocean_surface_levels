@@ -19,3 +19,11 @@ stages:
       - data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
     outs:
       - reports/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.mp4
+  split:
+    cmd: python scripts/split.py --src data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc --train_dst data/processed/train.nc --test_dst  data/processed/test.nc --test_size 0.2
+    deps:
+      - scripts/split.py
+      - data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
+    outs:
+      - data/processed/train.nc
+      - data/processed/test.nc
