@@ -71,3 +71,88 @@ stages:
       hash: md5
       md5: 950e123072088a43b9e443d4da2d5ed3
       size: 1225378479
+  cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D:
+    cmd:
+    - python scripts/subset_cmems.py --dataset-id cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D
+      --variables sla ugos vgos --output-file cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
+      -O data/raw
+    - python scripts/plot_video.py --src data/raw/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
+      --dst reports/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.mp4
+    - "python scripts/split.py \\\n--src data/raw/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
+      \\\n--train_dst data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D_train.nc
+      \\\n--test_dst  data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D_test.nc
+      \\\n--test_size 0.2\n"
+    deps:
+    - path: scripts/plot_video.py
+      hash: md5
+      md5: 2ca308a68c84b6242545120d256f238f
+      size: 1417
+    - path: scripts/split.py
+      hash: md5
+      md5: ea7df6f8e35601b43f84b7a787613942
+      size: 1123
+    - path: scripts/subset_cmems.py
+      hash: md5
+      md5: a0302e5b10c29ce6276fb38ce71c2496
+      size: 4701
+    outs:
+    - path: data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D_test.nc
+      hash: md5
+      md5: 0677a368e1f36b76ce84fb353362e7c0
+      size: 544091704
+    - path: 
+        data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D_train.nc
+      hash: md5
+      md5: 9751300fb8aa09249a2a868465d0b963
+      size: 2176273768
+    - path: data/raw/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
+      hash: md5
+      md5: 08ad93cce7a94560e21f3c3bcca428ab
+      size: 2720328504
+    - path: reports/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.mp4
+      hash: md5
+      md5: 2f91ede863dc1416704aa9133d673461
+      size: 1131270
+  cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D:
+    cmd:
+    - python scripts/subset_cmems.py --dataset-id cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D
+      --time-start "1993-01-01T00:00:00" --time-end "2024-06-14T00:00:00" --min-lon
+      -40 --max-lon -10 --min-lat 22 --max-lat 29.5 --variables sla ugos vgos --output-file
+      cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.nc -O data/raw
+    - python scripts/plot_video.py --src data/raw/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.nc
+      --dst reports/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.mp4
+    - "python scripts/split.py \\\n--src data/raw/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.nc
+      \\\n--train_dst data/processed/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D_train.nc
+      \\\n--test_dst  data/processed/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D_test.nc
+      \\\n--test_size 0.2\n"
+    deps:
+    - path: scripts/plot_video.py
+      hash: md5
+      md5: 2ca308a68c84b6242545120d256f238f
+      size: 1417
+    - path: scripts/split.py
+      hash: md5
+      md5: ea7df6f8e35601b43f84b7a787613942
+      size: 1123
+    - path: scripts/subset_cmems.py
+      hash: md5
+      md5: a0302e5b10c29ce6276fb38ce71c2496
+      size: 4701
+    outs:
+    - path: data/processed/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D_test.nc
+      hash: md5
+      md5: c545c21d82155753dba39fc14d25617c
+      size: 1062265143
+    - path: 
+        data/processed/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D_train.nc
+      hash: md5
+      md5: daadd6c6d8ee0fc6c0a981601be39817
+      size: 4247588547
+    - path: data/raw/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.nc
+      hash: md5
+      md5: dec5b637f45b41dac48d07e492d8ba58
+      size: 5309819580
+    - path: reports/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.mp4
+      hash: md5
+      md5: f60fcf441d1e3811bbf618060e4b60e8
+      size: 16246556

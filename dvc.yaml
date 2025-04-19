@@ -1,29 +1,39 @@
 stages:
-  download:
-    cmd: python scripts/download.py --src cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D --dst data/raw
+  cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D:
+    cmd:
+      - python scripts/subset_cmems.py --dataset-id cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D --variables sla ugos vgos --output-file cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc -O data/raw
+      - python scripts/plot_video.py --src data/raw/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc --dst reports/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.mp4
+      - |
+        python scripts/split.py \
+        --src data/raw/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc \
+        --train_dst data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D_train.nc \
+        --test_dst  data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D_test.nc \
+        --test_size 0.2
     deps:
-      - scripts/download.py
-    outs:
-      - data/raw/SEALEVEL_EUR_PHY_L4_NRT_008_060
-  aggregate:
-    cmd: python scripts/aggregate.py --src data/raw/SEALEVEL_EUR_PHY_L4_NRT_008_060 --dst data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
-    deps:
-      - scripts/aggregate.py
-      - data/raw/SEALEVEL_EUR_PHY_L4_NRT_008_060
-    outs:
-      - data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
-  plot_video:
-    cmd: python scripts/plot_video.py --src data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc --dst reports/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.mp4
-    deps:
+      - scripts/subset_cmems.py
       - scripts/plot_video.py
-      - data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
-    outs:
-      - reports/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.mp4
-  split:
-    cmd: python scripts/split.py --src data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc --train_dst data/processed/train.nc --test_dst  data/processed/test.nc --test_size 0.2
-    deps:
       - scripts/split.py
-      - data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
     outs:
-      - data/processed/train.nc
-      - data/processed/test.nc
+      - data/raw/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
+      - reports/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.mp4
+      - data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D_train.nc
+      - data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D_test.nc
+  cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D:
+    cmd:
+      - python scripts/subset_cmems.py --dataset-id cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D --time-start "1993-01-01T00:00:00" --time-end "2024-06-14T00:00:00" --min-lon -40 --max-lon -10 --min-lat 22 --max-lat 29.5 --variables sla ugos vgos --output-file cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.nc -O data/raw
+      - python scripts/plot_video.py --src data/raw/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.nc --dst reports/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.mp4
+      - |
+        python scripts/split.py \
+        --src data/raw/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.nc \
+        --train_dst data/processed/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D_train.nc \
+        --test_dst  data/processed/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D_test.nc \
+        --test_size 0.2
+    deps:
+      - scripts/subset_cmems.py
+      - scripts/plot_video.py
+      - scripts/split.py
+    outs:
+      - data/raw/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.nc
+      - reports/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.mp4
+      - data/processed/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D_train.nc
+      - data/processed/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D_test.nc

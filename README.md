@@ -9,7 +9,7 @@ Questions to consider:
 ## Getting started
 
 ### Install
-This project uses uv to handle dependencies so you can install it with:
+This project uses `uv` to handle dependencies so you can install it with:
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
