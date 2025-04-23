@@ -2,9 +2,6 @@
 
 **Objective**: Develop a predictive model to forecast ocean surface currents with enough accuracy to capture day-to-day changes. This forecast should ideally capture both the spatial and temporal dynamics of ocean currents in the European Seas.
 
-Questions to consider:
-- The model should be able to predict the geostrophic velocity components (ugosa, vgosa) based on the Sea Level Anomaly (SLA) and other relevant variables?
-- should predict the SLA on the next sample?
 
 ## Getting started
 
@@ -51,7 +48,7 @@ Challenge: The data are spatially distributed and temporally evolving. Predictin
 
 
 ### Dataset description
-https://data.marine.copernicus.eu/product/SEALEVEL_EUR_PHY_L4_NRT_008_060/description
+[cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D](https://data.marine.copernicus.eu/product/SEALEVEL_EUR_PHY_L4_NRT_008_060/description)
 
 - **Dimensions & Coordinates**
   - **time:** The time coordinate (with a daily or near-daily sampling as indicated by the “time_coverage_resolution” of P1D) over which the altimetry measurements are made.
@@ -74,8 +71,8 @@ https://data.marine.copernicus.eu/product/SEALEVEL_EUR_PHY_L4_NRT_008_060/descri
 ### Dataset notes
 - Current data is available in NetCDF format, which is a common choice for storing multi-dimensional scientific data. You can use libraries like `xarray` or `netCDF4` in Python to read and manipulate this data.
 
-- This dataset contain 1060 sample, 1 snapshot/day (uniform temporal sampling), from 2022-01-01 to 2024-11-25.
--  Resolution: 0.125° grid (~14 km at equator)
+- This dataset contain 11487 sample, 1 snapshot/day (uniform temporal sampling), from 1993-01-01 to 2024-06-13.
+-  Resolution: 0.0625° grid
 - Domain: Northeast Atlantic & Mediterranean Sea
 - Land Mask: NaN values indicate land/ice
 
