@@ -2,6 +2,7 @@
 
 **Objective**: Develop a predictive model to forecast ocean surface currents with enough accuracy to capture day-to-day changes. This forecast should ideally capture both the spatial and temporal dynamics of ocean currents in the European Seas.
 
+Ocean currents are vital for regulating Earth's climate by transporting heat and nutrients, influencing weather patterns, and supporting marine ecosystems . Accurate forecasting aids in navigation, optimizes shipping routes, and enhances safety at sea 
 
 ## Getting started
 
@@ -119,3 +120,9 @@ For a forecast task of ocean surface currents the follwing metrics could be used
 
 - **Mesosclae**: Mid-size oceanic features, typically ranging from 10 to 100 km in diameter, such as eddies, currents, and fronts
 - **Submesoscale**: Smaller oceanic features, typically ranging from 1 to 10 km, that can influence the dynamics of larger mesoscale features.
+
+
+
+Project in collaboration with:
+- [Universidad de Las Palmas de Gran Canaria](https://www.ulpgc.es/)
+- [Università degli studi di Bari "Aldo Moro"](https://www.uniba.it/)
