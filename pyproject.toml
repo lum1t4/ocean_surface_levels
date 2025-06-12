@@ -27,6 +27,7 @@ dependencies = [
     "netcdf4>=1.7.2",
     "numcodecs==0.15.1",
     "numpy>=2.2.4",
+    "python-dotenv>=1.1.0",
     "pyyaml>=6.0.2",
     "scikit-learn>=1.6.1",
     "torch>=2.6.0",

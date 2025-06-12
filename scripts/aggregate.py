@@ -1,7 +1,9 @@
 import xarray as xr
 from pathlib import Path
 import argparse
+import dotenv
 
+dotenv.load_dotenv()
 
 def aggregate(src: str, dst: str):
     src = Path(src)
