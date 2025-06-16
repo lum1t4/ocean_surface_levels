@@ -2,8 +2,7 @@ import xarray as xr
 import torch
 from torch.utils.data import Dataset
 import numpy as np
-from typing import Literal
-
+from typing import Literal, Callable, Optional
 
 class SequenceDataset(Dataset):
     def __init__(
@@ -29,7 +28,6 @@ class SequenceDataset(Dataset):
         self.length = self.data[self.var[0]].shape[0]  # Assuming all variables have the same time dimension
         self.length = (self.length - seq_length - seq_target) // seq_stride + 1
 
-
     def __len__(self):
         return self.length
 
@@ -39,18 +37,18 @@ class SequenceDataset(Dataset):
         seq_start = idx * self.seq_stride
         seq_end = seq_start + self.seq_length
 
-        x = {}
-        y = {}
-        
+        x, y = {}, {}
+
         for v in self.var:
             x[v] = self.data[v][seq_start:seq_end]  # (S, H, W)
             y[v] = self.data[v][seq_end:seq_end + self.seq_target]  # (1, H, W)
-            x[v] = torch.from_numpy(x[v].to_numpy()).float()  # (S, H, W)
-            y[v] = torch.from_numpy(y[v].to_numpy()).float() # (1, H, W)
             
             # Remove nan values
-            x[v] = torch.nan_to_num(x[v], nan=0.0)
-            y[v] = torch.nan_to_num(y[v], nan=0.0)
+            x[v] = np.nan_to_num(x[v], nan=0.0)
+            y[v] = np.nan_to_num(y[v], nan=0.0)
+
+            x[v] = torch.from_numpy(x[v]).to(torch.float32)
+            y[v] = torch.from_numpy(y[v]).to(torch.float32)
 
         if self.stack_vars:
             if len(self.var) > 1:
@@ -76,7 +74,6 @@ class SequenceDataset(Dataset):
         #     "days": days,
         # }
         return x, y
-
 
 
 class CustomLoader(Dataset):

@@ -37,7 +37,7 @@ def parse_args() -> argparse.Namespace:
     omitted; their values will remain `None` and thus not constrain the API call.
     """
     parser = argparse.ArgumentParser(
-        prog="subset_cmems",
+        prog="download",
         description="Subset Copernicus Marine data via the Python API",
     )
 

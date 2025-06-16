@@ -156,3 +156,20 @@ stages:
       hash: md5
       md5: f60fcf441d1e3811bbf618060e4b60e8
       size: 16246556
+  cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D-224x224:
+    cmd:
+    - "python scripts/download.py \\\n--dataset-id cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D
+      \\\n--time-start \"1993-01-01T00:00:00\" --time-end \"2024-06-14T00:00:00\"
+      \\\n--min-lon -30.0625 --max-lon -16.0625 \\\n--min-lat 19.9375 --max-lat 33.9375
+      \\\n--variables sla ugos vgos \\\n--output-file cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D-224x224.nc
+      \\\n-O data/raw\n"
+    deps:
+    - path: scripts/download.py
+      hash: md5
+      md5: 57289356da02d9c23b4777b1a12369ea
+      size: 4733
+    outs:
+    - path: data/raw/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D-224x224.nc
+      hash: md5
+      md5: e0340bd2dfbbcd9aad103d7fe6b3cb19
+      size: 6916529244

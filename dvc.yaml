@@ -1,25 +1,36 @@
 stages:
   cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D:
     cmd:
-      - python scripts/subset_cmems.py --dataset-id cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D --variables sla ugos vgos --output-file cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc -O data/raw
+      - python scripts/download.py --dataset-id cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D --variables sla ugos vgos --output-file cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc -O data/raw
       - python scripts/plot_video.py --src data/raw/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc --dst reports/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.mp4
     deps:
-      - scripts/subset_cmems.py
+      - scripts/download.py
       - scripts/plot_video.py
     outs:
       - data/raw/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.nc
       - reports/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D.mp4
-      - data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D_train.nc
-      - data/processed/cmems_obs-sl_eur_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D_test.nc
   cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D:
     cmd:
-      - python scripts/subset_cmems.py --dataset-id cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D --time-start "1993-01-01T00:00:00" --time-end "2024-06-14T00:00:00" --min-lon -40 --max-lon -10 --min-lat 22 --max-lat 29.5 --variables sla ugos vgos --output-file cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.nc -O data/raw
+      - python scripts/download.py --dataset-id cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D --time-start "1993-01-01T00:00:00" --time-end "2024-06-14T00:00:00" --min-lon -40 --max-lon -10 --min-lat 22 --max-lat 29.5 --variables sla ugos vgos --output-file cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.nc -O data/raw
       - python scripts/plot_video.py --src data/raw/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.nc --dst reports/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.mp4
     deps:
-      - scripts/subset_cmems.py
+      - scripts/download.py
       - scripts/plot_video.py
     outs:
       - data/raw/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.nc
       - reports/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D.mp4
-      - data/processed/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D_train.nc
-      - data/processed/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D_test.nc
+  cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D-224x224:
+    cmd:
+      - |
+        python scripts/download.py \
+        --dataset-id cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D \
+        --time-start "1993-01-01T00:00:00" --time-end "2024-06-14T00:00:00" \
+        --min-lon -30.0625 --max-lon -16.0625 \
+        --min-lat 19.9375 --max-lat 33.9375 \
+        --variables sla ugos vgos \
+        --output-file cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D-224x224.nc \
+        -O data/raw
+    deps:
+      - scripts/download.py
+    outs:
+      - data/raw/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D-224x224.nc
