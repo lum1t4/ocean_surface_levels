@@ -1,67 +1,50 @@
 import argparse
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation, FFMpegWriter
 import xarray as xr
-import cmocean
+import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+import cmocean
+from matplotlib.animation import FFMpegWriter
+from tqdm.auto import tqdm
 
-def generate_plot(src, dst):
-    # 1) Load dataset and pull SLA into memory (once)
-    ds = xr.load_dataset(src)
-    sla = ds['sla']
-    assert sla.ndim == 3, "SLA data must be 3D (time, lat, lon)."
-    sla = sla.load()  # now sla.values is in RAM
 
-    # 2) Pre-compute global vmin/vmax
-    vmin, vmax = float(sla.min()), float(sla.max())
+def main(src, dst):
+    bbox = dict(longitude=slice(-30.0625, -10), latitude=slice(22, 29.5))
+    ds = xr.open_dataset(src, chunks={"time": 1})
+    sla = ds["sla"].sel(**bbox).astype("float32").persist()
 
-    # 3) Setup figure & static map elements
-    fig, ax = plt.subplots(
-        figsize=(16, 9), dpi=150,
-        subplot_kw={'projection': ccrs.PlateCarree()}
-    )
-    # ax.set_extent([-30, -10, 22, 29.5], crs=ccrs.PlateCarree())
-    coast = ax.coastlines(resolution='10m', color='gray', linewidth=1)
-    ax.axis('off')
+    fig, ax = plt.subplots(figsize=(16, 9), dpi=150, subplot_kw={"projection": ccrs.PlateCarree()})
+    ax.add_feature(cfeature.COASTLINE, linewidth=0.7)
+    ax.set_extent([-30, -10, 22, 29.5])
+    ax.axis("off")
 
-    # 4) Initial mesh (for frame 0)
-    lon = sla.longitude
-    lat = sla.latitude
-    data0 = sla.isel(time=0).values
-
+    lon, lat = sla.longitude.values, sla.latitude.values
     mesh = ax.pcolormesh(
-        lon, lat, data0,
-        vmin=vmin, vmax=vmax,
+        lon,
+        lat,
+        np.zeros_like(sla.isel(time=0)),
+        vmin=float(sla.min()),
+        vmax=float(sla.max()),
+        cmap=cmocean.cm.balance,
         transform=ccrs.PlateCarree(),
-        cmap=cmocean.cm.balance
     )
-    cbar = fig.colorbar(mesh, ax=ax, orientation='horizontal', pad=0.05)
-    title = ax.set_title(f"SLA Heatmap - Time: {np.datetime_as_string(sla.time[0].values, unit='D')}")
+    title = ax.set_title("")
+    plt.colorbar(mesh, ax=ax, orientation="horizontal", pad=0.02)
 
-    # 5) Update function: only change the mesh array and title
-    def update(frame):
-        arr = sla.isel(time=frame).values.ravel()
-        mesh.set_array(arr)
-        t = np.datetime_as_string(sla.time[frame].values, unit='D')
-        title.set_text(f"SLA Heatmap - Time: {t}")
-        return mesh, title
-
-    # 6) Animate with blit=True
-    ani = FuncAnimation(
-        fig, update,
-        frames=sla.sizes['time'],
-        interval=200,
-        blit=True
+    writer = FFMpegWriter(
+        fps=10, codec="libx264", extra_args=["-pix_fmt", "yuv420p", "-preset", "fast"]
     )
 
-    # 7) Save with ffmpeg writer
-    writer = FFMpegWriter(fps=10)
-    ani.save(dst, writer=writer)
+    with writer.saving(fig, dst, dpi=150):
+        for t in tqdm(range(sla.sizes["time"]), desc="Rendering frames", unit="frame"):
+            mesh.set_array(sla.isel(time=t).load().values.ravel())
+            title.set_text(np.datetime_as_string(sla.time[t].values, unit="D"))
+            writer.grab_frame()
+
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Plot SLA data as a video.")
-    parser.add_argument("--src", required=True, help="Path to SLA NetCDF file.")
-    parser.add_argument("--dst", required=True, help="Output video path.")
-    args = parser.parse_args()
-    generate_plot(args.src, args.dst)
+    p = argparse.ArgumentParser()
+    p.add_argument("--src", required=True)
+    p.add_argument("--dst", required=True)
+    main(**vars(p.parse_args()))
