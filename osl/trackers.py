@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import List
 
-from landslide.dtypes import IterableSimpleNamespace
-from landslide.torch_utils import rank_zero_only
+from osl.dtypes import IterableSimpleNamespace
+from osl.torch_utils import rank_zero_only
 
 _WANDB_AVAILABLE = False
 
