@@ -12,34 +12,35 @@ from typing import List, Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from pydantic import BaseModel
 
 
 # ----------------------------
 # Configuration
 # ----------------------------
-@dataclass
-class SegformerConfig:
-    num_channels = 3
-    num_encoder_blocks = 4
-    dephts = [2, 2, 2, 2]
-    hidden_sizes = [32, 64, 160, 256]
-    patch_sizes = [7, 3, 3, 3]
-    strides = [4, 2, 2, 2]
-    num_attention_heads = [1, 2, 5, 8]
-    mlp_ratios = [4, 4, 4, 4]
-    hidden_act = "gelu"
-    hidden_dropout_prob = 0.0
-    attention_probs_dropout_prob = 0.0
-    classifier_dropout_prob = 0.1
-    classifier_dropout_prob = 0.1
-    initializer_range = 0.02
-    drop_path_rate = 0.1
-    layer_norm_eps = 1e-6
-    decoder_hidden_size = 256
+
+class SegformerConfig(BaseModel):
+    num_channels: int = 3
+    num_encoder_blocks: int = 4
+    dephts: list[int] = [2, 2, 2, 2]
+    hidden_sizes: list[int] = [32, 64, 160, 256]
+    patch_sizes: list[int] = [7, 3, 3, 3]
+    strides: list[int] = [4, 2, 2, 2]
+    num_attention_heads: list[int] = [1, 2, 5, 8]
+    mlp_ratios: list[int] = [4, 4, 4, 4]
+    hidden_act: str = "gelu"
+    hidden_dropout_prob: float = 0.0
+    attention_probs_dropout_prob: float = 0.0
+    classifier_dropout_prob: float = 0.1
+    classifier_dropout_prob: float = 0.1
+    initializer_range: float = 0.02
+    drop_path_rate: float = 0.1
+    layer_norm_eps: float = 1e-6
+    decoder_hidden_size: int = 256
     reshape_last_stage: Optional[bool] = True
-    sr_ratios = [8, 4, 2, 1]
-    depths = [2, 2, 2, 2]
-    num_labels = 1
+    sr_ratios: list[int] = [8, 4, 2, 1]
+    depths: list[int] = [2, 2, 2, 2]
+    num_labels: int = 1
 
 
 # ----------------------------

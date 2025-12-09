@@ -6,7 +6,8 @@ Based on "Convolutional LSTM Network: A Machine Learning Approach for Precipitat
 import torch
 import torch.nn as nn
 from typing import List
-
+from dataclasses import dataclass
+from pydantic import BaseModel
 
 class ConvLSTMCell(nn.Module):
     """Convolutional LSTM cell."""
@@ -138,51 +139,52 @@ class ConvLSTM(nn.Module):
             raise ValueError("Inconsistent list length.")
 
 
+
+
+class OSPConfig(BaseModel):
+    input_channels: int = 3  # sla, ugos, vgos
+    hidden_dims: List[int] = [64, 128, 128, 64]
+    kernel_sizes: List[int] = [3, 3, 3, 3]
+    num_layers: int = 4
+    seq_length: int = 3
+
+
 class OceanSurfacePredictorConvLSTM(nn.Module):
     """
     Ocean surface predictor using ConvLSTM architecture.
     Takes a sequence of ocean states and predicts future states.
     """
     
-    def __init__(
-        self,
-        input_channels: int = 3,  # sla, ugos, vgos
-        hidden_dims: List[int] = [64, 128, 128, 64],
-        kernel_sizes: List[int] = [3, 3, 3, 3],
-        num_layers: int = 4,
-        seq_length: int = 3,
-        seq_target: int = 1
-    ):
+    def __init__(self, config: OSPConfig):
         super().__init__()
         
-        self.input_channels = input_channels
-        self.seq_length = seq_length
-        self.seq_target = seq_target
+        self.input_channels = config.input_channels
+        self.seq_length = config.seq_length
         
         # Encoder ConvLSTM
         self.encoder = ConvLSTM(
-            input_dim=input_channels,
-            hidden_dims=hidden_dims,
-            kernel_sizes=kernel_sizes,
-            num_layers=num_layers,
+            input_dim=config.input_channels,
+            hidden_dims=config.hidden_dims,
+            kernel_sizes=config.kernel_sizes,
+            num_layers=config.num_layers,
             batch_first=True,
             return_all_layers=False
         )
         
         # Decoder ConvLSTM for prediction
         self.decoder = ConvLSTM(
-            input_dim=hidden_dims[-1],  # Use last hidden dim from encoder
-            hidden_dims=hidden_dims[::-1],  # Reverse hidden dims for decoder
-            kernel_sizes=kernel_sizes[::-1],
-            num_layers=num_layers,
+            input_dim=config.hidden_dims[-1],  # Use last hidden dim from encoder
+            hidden_dims=config.hidden_dims[::-1],  # Reverse hidden dims for decoder
+            kernel_sizes=config.kernel_sizes[::-1],
+            num_layers=config.num_layers,
             batch_first=True,
             return_all_layers=False
         )
         
         # Output projection
         self.output_conv = nn.Conv2d(
-            hidden_dims[0],  # First element of reversed hidden_dims
-            input_channels,
+            config.hidden_dims[0],  # First element of reversed hidden_dims
+            config.input_channels,
             kernel_size=1
         )
         
@@ -190,50 +192,47 @@ class OceanSurfacePredictorConvLSTM(nn.Module):
         """
         Args:
             x: Input tensor of shape (batch, seq_length, channels, height, width)
-        
+
         Returns:
-            Predicted tensor of shape (batch, seq_target, channels, height, width)
+            Predicted tensor of shape (batch, seq_length, channels, height, width)
         """
-        batch_size, seq_len, channels, height, width = x.shape
-        
+        batch_size, seq_len, _, height, width = x.shape
+
         # Encode input sequence
-        _, encoder_states = self.encoder(x)
-        
-        # Initialize decoder input with zeros
+        _, _ = self.encoder(x)
+
+        # Initialize decoder input with zeros (predict same length as input)
         decoder_input = torch.zeros(
-            batch_size, self.seq_target, self.encoder.hidden_dims[-1], height, width,
+            batch_size, seq_len, self.encoder.hidden_dims[-1], height, width,
             device=x.device, dtype=x.dtype
         )
-        
+
         # Decode to generate predictions
-        decoder_output, _ = self.decoder(decoder_input, None)  # Let decoder initialize its own states
-        
+        decoder_output, _ = self.decoder(decoder_input, None)
+
         # Reshape for output projection
         decoder_output = decoder_output[0]  # Get last layer output
-        # decoder_output is (seq_target, batch, channels, h, w) due to ConvLSTM internals
-        decoder_output = decoder_output.permute(1, 0, 2, 3, 4)  # (batch, seq_target, channels, h, w)
-        
+        # decoder_output is (seq_len, batch, channels, h, w) due to ConvLSTM internals
+        decoder_output = decoder_output.permute(1, 0, 2, 3, 4)  # (batch, seq_len, channels, h, w)
+
         # Project to output channels
         output = []
-        for t in range(self.seq_target):
+        for t in range(seq_len):
             out_t = self.output_conv(decoder_output[:, t])  # Apply conv to each timestep
             output.append(out_t)
-        
-        output = torch.stack(output, dim=1)  # (batch, seq_target, channels, height, width)
-        
+
+        output = torch.stack(output, dim=1)  # (batch, seq_length, channels, height, width)
+
         return output
 
 
 if __name__ == "__main__":
     # Test the model
-    model = OceanSurfacePredictorConvLSTM(
-        input_channels=3,
-        seq_length=3,
-        seq_target=1
-    )
-    
+    config = OSPConfig(seq_length=3)
+    model = OceanSurfacePredictorConvLSTM(config)
+
     # Test input
     x = torch.randn(2, 3, 3, 224, 224)  # (batch, seq_len, channels, height, width)
     y = model(x)
     print(f"Input shape: {x.shape}")
-    print(f"Output shape: {y.shape}")  # Should be (2, 1, 3, 224, 224)
+    print(f"Output shape: {y.shape}")  # Should be (2, 3, 3, 224, 224)

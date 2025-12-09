@@ -1,0 +1,33 @@
+# Data configuration
+dataset: "data/raw/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D-224x224.nc"
+seq_length: 3
+seq_stride: 4
+variables: ["sla", "ugos", "vgos"]
+
+# Training configuration
+model: 'osl/convlstm-s'
+batch_size: 8
+lr: 0.001
+weight_decay: 0.00001
+epochs: 10
+
+# System configuration
+workers: 8
+device: "cpu"
+seed: 1337
+deterministic: false
+save_dir: "runs/convlstm"
+
+mode: 'min'
+monitor: 'valid/loss'
+
+save_period: -1
+patience: 10
+
+
+tracker:
+project: 'ocean surface level'
+name: 'run_000'
+
+
+
