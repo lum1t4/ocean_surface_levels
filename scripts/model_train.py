@@ -32,6 +32,7 @@ def schedule_train_epoch(ctx: TrainContext):
         ctx.optimizer.step()
         running_norm = (running_norm * batch_idx + norm.item()) / (batch_idx + 1)
         running_loss = (running_loss * batch_idx + loss.item()) / (batch_idx + 1)
+        
         if RANK in {-1, 0}:
             progress.set_description("%11s%11.4g%11.4g%11.4g" % (
                 f"{ctx.curr_iter + 1}/{ctx.config.epochs}",
@@ -100,7 +101,7 @@ def main(config: IterableSimpleNamespace):
     print(f"Device: {ctx.device}")
     print(f"Training for {config.epochs} epochs...")
     
-    for epoch in range(config.epochs):
+    for epoch in range(ctx.start_iter, config.epochs):
         ctx.curr_iter = epoch
         ctx.metrics = {}
         schedule_train_epoch(ctx)
