@@ -41,8 +41,8 @@ def eager_attention_forward(
 
 scaled_dot_product = eager_attention_forward
 
-if torch.cuda.is_available() and torch.backends.cuda.is_flash_attention_available():
-    torch.backends.cuda.enable_flash_sdp()
+if torch.cuda.is_available():
+    torch.backends.cuda.enable_flash_sdp(enabled=torch.backends.cuda.is_flash_attention_available())
     scaled_dot_product = nn.functional.scaled_dot_product_attention
     
 
