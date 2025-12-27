@@ -80,10 +80,10 @@ def schedule_setup_dataset(ctx: TrainContext):
     valid_data = data.isel(time=slice(train_size, data_len))
 
     print(f"Train set size: {len(train_data.time)}, Validation set size: {len(valid_data.time)}")
-    train_set = SequenceDataset(train_data, seq_length=ctx.config.seq_length, seq_stride=ctx.config.seq_stride)
-    valid_set = SequenceDataset(valid_data, seq_length=ctx.config.seq_length, seq_stride=ctx.config.seq_stride)
-    ctx.train_loader = DataLoader(train_set, batch_size=ctx.config.batch_size, shuffle=True,  num_workers=ctx.config.workers, pin_memory=True)
-    ctx.valid_loader = DataLoader(valid_set, batch_size=ctx.config.batch_size, shuffle=False, num_workers=ctx.config.workers, pin_memory=True)
+    ctx.train_set = SequenceDataset(train_data, seq_length=ctx.config.seq_length, seq_stride=ctx.config.seq_stride)
+    ctx.valid_set = SequenceDataset(valid_data, seq_length=ctx.config.seq_length, seq_stride=ctx.config.seq_stride)
+    ctx.train_loader = DataLoader(ctx.train_set, batch_size=ctx.config.batch_size, shuffle=True,  num_workers=ctx.config.workers, pin_memory=True)
+    ctx.valid_loader = DataLoader(ctx.valid_set, batch_size=ctx.config.batch_size, shuffle=False, num_workers=ctx.config.workers, pin_memory=True)
     return ctx
 
 
@@ -129,6 +129,7 @@ if __name__ == '__main__':
     parser.add_argument('--variables', type=str, nargs='+', help='Variables to use from the dataset')
 
     # Training configuration
+    parser.add_argument('--model', type=str, help="Model name")
     parser.add_argument('--batch_size', type=int, help='Batch size')
     parser.add_argument('--lr', type=float, help='Learning rate')
     parser.add_argument('--weight_decay', type=float, help='Weight decay for optimizer')
