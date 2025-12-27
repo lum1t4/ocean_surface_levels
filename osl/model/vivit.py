@@ -19,10 +19,11 @@ def eager_attention_forward(
     attn_bias = torch.zeros(L, S, dtype=query.dtype, device=query.device)
     if is_causal:
         assert attn_mask is None
-        temp_mask = torch.ones(L, S, dtype=torch.bool).tril(diagonal=0)
+        temp_mask = torch.ones(L, S, dtype=torch.bool, device=query.device).tril(diagonal=0)
         attn_bias.masked_fill_(temp_mask.logical_not(), float("-inf"))
 
     if attn_mask is not None:
+        attn_mask = attn_mask.to(query.device)
         if attn_mask.dtype == torch.bool:
             attn_bias.masked_fill_(attn_mask.logical_not(), float("-inf"))
         else:
@@ -276,7 +277,8 @@ class VivitVideoRegressionHead(nn.Module):
         x = x.transpose(1, 2).view(B, C, -1, self.feat_h, self.feat_w)
         # (B, C', T', H', W') -> (B, C, T, H, W)
         x = self.projection(x)
-        return x
+        # (B, C, T, H, W) -> (B, T, C, H, W)
+        return x.permute(0, 2, 1, 3, 4)
 
 
 
