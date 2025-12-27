@@ -50,7 +50,7 @@ if torch.cuda.is_available():
 class VivitConfig(BaseModel):
     num_frames: int = 32
     image_size: int = 224
-    initializer_range: float =  0.02
+    initializer_range: float = 0.02
     intermediate_size: int = 3072
     layer_norm_eps: float = 1e-6
     num_attention_heads: int = 12
