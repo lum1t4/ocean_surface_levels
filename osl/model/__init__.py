@@ -1,6 +1,7 @@
 from osl.model.registry import ModelRegistry, load_model
 from osl.model.segformer import SegformerConfig, SegformerForSemanticSegmentation
 from osl.model.convlstm import OSPConfig, OceanSurfacePredictorConvLSTM
+from osl.model.vivit import VivitConfig, VivitDecoder
 
 __all__ = ['load_model']
 
@@ -15,3 +16,4 @@ ModelRegistry.register_model('nvidia/segformer-b5', SegformerForSemanticSegmenta
 
 ModelRegistry.register_model('osl/convlstm-s', OceanSurfacePredictorConvLSTM, OSPConfig(hidden_dims=[32, 64, 32], kernel_sizes=[3, 3, 3], num_layers=3))
 ModelRegistry.register_model('osl/convlstm-m', OceanSurfacePredictorConvLSTM, OSPConfig(hidden_dims=[64, 128, 128, 64], kernel_sizes=[3, 3, 3, 3], num_layers=4))
+ModelRegistry.register_model('osl/Vivit', VivitDecoder, VivitConfig)
