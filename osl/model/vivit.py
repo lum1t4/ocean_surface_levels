@@ -114,52 +114,18 @@ class VivitEmbeddings(nn.Module):
         super().__init__()
         self.config = config
         self.patch_size = config.tubelet_size[1:]
-
-        self.cls_token = nn.Parameter(torch.zeros(1, 1, config.hidden_size))
         self.patch_embeddings = VivitTubeletEmbeddings(config)
-        self.position_embeddings = nn.Parameter(torch.zeros(1, self.patch_embeddings.num_patches + 1, config.hidden_size))
+        self.position_embeddings = nn.Embedding(self.patch_embeddings.num_patches, config.hidden_size)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
     
     def forward(self, pixel_values: torch.Tensor, interpolate_pos_encoding: bool = False) -> torch.Tensor:
         B, _, _, H, W = pixel_values.shape
         embeddings = self.patch_embeddings(pixel_values, interpolate_pos_encoding=interpolate_pos_encoding)
-        #cls_tokens = self.cls_token.tile([B, 1, 1])
-        #embeddings = torch.cat((cls_tokens, embeddings), dim=1)
-        return embeddings
-        position_embeddings = self.interpolate_pos_encoding(embeddings, H, W) if interpolate_pos_encoding else self.position_embeddings
-        print(embeddings.shape, position_embeddings.shape)
+        # TODO: evaluate a clever positional encoding strategy
+        position_embeddings = self.position_embeddings(torch.arange(0, embeddings.shape[1], 1, dtype=torch.long))
         embeddings = embeddings + position_embeddings
         embeddings = self.dropout(embeddings)
-        return embeddings 
-
-    def interpolate_pos_encoding(self, embeddings: torch.Tensor, height: int, width: int):
-        num_patches = embeddings.shape[1] - 1
-        num_positions = self.position_embeddings.shape[1] - 1
-        # always interpolate when tracing to ensure the exported model works for dynamic input shapes
-        if not torch.jit.is_tracing() and num_patches == num_positions and height == width:
-            return self.position_embeddings
-        
-
-        class_pos_embed = self.position_embeddings[:, :1]
-        patch_pos_embed = self.position_embeddings[:, 1:]
-
-        dim = embeddings.shape[-1]
-        new_height = height // self.patch_size[0]
-        new_width = width // self.patch_size[1]
-
-        sqrt_num_positions = int(num_positions**0.5)
-        patch_pos_embed = patch_pos_embed.reshape(1, sqrt_num_positions, sqrt_num_positions, dim)
-        patch_pos_embed = patch_pos_embed.permute(0, 3, 1, 2)
-
-        patch_pos_embed = nn.functional.interpolate(
-            patch_pos_embed,
-            size=(new_height, new_width),
-            mode="bicubic",
-            align_corners=False,
-        )
-        patch_pos_embed = patch_pos_embed.permute(0, 2, 3, 1).view(1, -1, dim)
-        return torch.cat((class_pos_embed, patch_pos_embed), dim=1)
-    
+        return embeddings
 
 
 class VivitSelfAttention(nn.Module):
@@ -176,7 +142,7 @@ class VivitSelfAttention(nn.Module):
     def forward(self, x: torch.Tensor):
         B, T, C = x.size()
         q = self.query(x).view(B, T, self.num_heads, self.head_dim).transpose(1, 2)
-        k = self.key(x)  .view(B, T, self.num_heads, self.head_dim).transpose(1, 2)
+        k = self.key(x).view(B, T, self.num_heads, self.head_dim).transpose(1, 2)
         v = self.value(x).view(B, T, self.num_heads, self.head_dim).transpose(1, 2)
         att = scaled_dot_product(q, k, v, dropout_p=0.0,is_causal=True)
         return att.transpose(1, 2).contiguous().reshape(B, T, -1)
@@ -281,8 +247,6 @@ class VivitVideoRegressionHead(nn.Module):
         return x.permute(0, 2, 1, 3, 4)
 
 
-
-
 class VivitDecoder(nn.Module):
     def __init__(self, config: VivitConfig):
         super().__init__()
@@ -296,5 +260,3 @@ class VivitDecoder(nn.Module):
             hidden_states = layer(hidden_states)
 
         return self.head(hidden_states)
-
-
