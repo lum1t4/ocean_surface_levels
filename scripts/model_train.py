@@ -25,7 +25,8 @@ def schedule_train_epoch(ctx: TrainContext):
         x = batch['inputs'].to(ctx.device)
         y = batch['targets'].to(ctx.device)
         ctx.optimizer.zero_grad()
-        preds = ctx.model(x)  # pred shape: (B, S, C, H, W)
+        # inputs and target shape are in the follwing form (B, T, C, H, W)
+        preds = ctx.model(x)
         loss = ctx.criterion(preds, y)
         loss.backward()
         norm = torch.nn.utils.clip_grad_norm_(ctx.model.parameters(), max_norm=1.0)
@@ -57,8 +58,8 @@ def schedule_valid_epoch(ctx: TrainContext):
     for batch_idx, batch in progress:
         x = batch['inputs'].to(ctx.device)
         y = batch['targets'].to(ctx.device)
-        pred = ctx.model(x)
-        loss = ctx.criterion(pred, y)
+        preds = ctx.model(x)
+        loss = ctx.criterion(preds, y)
         running_loss = (running_loss * batch_idx + loss.item()) / (batch_idx + 1)
         progress.set_description("%11.4g" % running_loss)
 
@@ -110,9 +111,6 @@ def main(config: IterableSimpleNamespace):
         ctx.iteration_end()
 
 
-# --------------------------------------------------
-# Entry point
-# --------------------------------------------------
 if __name__ == '__main__':
     import argparse
 

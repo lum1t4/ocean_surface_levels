@@ -163,12 +163,12 @@ class InfiniteDataLoader(DataLoader):
         self.iterator = self._get_iterator()
 
 
-def get_model_num_params(model: nn.Module):
+def model_get_num_params(model: nn.Module):
     """Return the total number of parameters in a YOLO model."""
     return sum(x.numel() for x in model.parameters())
 
 
-def get_model_num_trainable_params(model: nn.Module):
+def model_get_num_trainable_params(model: nn.Module):
     """Return the total number of parameters with gradients in a YOLO model."""
     return sum(x.numel() for x in model.parameters() if x.requires_grad)
 
