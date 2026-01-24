@@ -29,7 +29,7 @@ class TrainContext:
     model: nn.Module | nn.parallel.DistributedDataParallel
     device: torch.device
     tracker: Tracker
-    save_dir: str
+    save_dir: Path
     fitness: float
     train_dataset: Dataset
     valid_dataset: Dataset | None

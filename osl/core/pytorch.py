@@ -100,7 +100,7 @@ def device_memory_used(device: torch.device) -> float:
 
 
 def device_memory_clear(device: torch.device):
-    """Clear accelerator memory on different platforms."""
+    """Clear accelerator memory and force garbage collection """
     gc.collect()
     if device.type == "mps":
         torch.mps.empty_cache()
@@ -110,7 +110,7 @@ def device_memory_clear(device: torch.device):
         torch.cuda.empty_cache()
 
 
-def check_amp(device: torch.device) -> bool:
+def device_check_auto_mixed_precision(device: torch.device) -> bool:
     import re
     prefix = colorstr("AMP: ")
     if device.type in {"cpu", "mps"}:

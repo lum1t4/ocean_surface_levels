@@ -2,6 +2,7 @@ from osl.model.registry import ModelRegistry, load_model
 from osl.model.segformer import SegformerConfig, SegformerForSemanticSegmentation
 from osl.model.convlstm import OSPConfig, OceanSurfacePredictorConvLSTM
 from osl.model.vivit import VivitConfig, VivitDecoder
+from osl.model.resunet import Unet, UnetConfig
 
 __all__ = ['load_model']
 
@@ -13,8 +14,16 @@ ModelRegistry.register_model('nvidia/segformer-b3', SegformerForSemanticSegmenta
 ModelRegistry.register_model('nvidia/segformer-b4', SegformerForSemanticSegmentation, SegformerConfig(depths=[3, 8, 27, 3], hidden_sizes=[64, 128, 320, 512], decoder_hidden_size=768, num_labels=1))
 ModelRegistry.register_model('nvidia/segformer-b5', SegformerForSemanticSegmentation, SegformerConfig(depths=[3, 6, 40, 3], hidden_sizes=[64, 128, 320, 512], decoder_hidden_size=768, num_labels=1))
 
-
 ModelRegistry.register_model('osl/convlstm-s', OceanSurfacePredictorConvLSTM, OSPConfig(hidden_dims=[32, 64, 32], kernel_sizes=[3, 3, 3], num_layers=3))
 ModelRegistry.register_model('osl/convlstm-m', OceanSurfacePredictorConvLSTM, OSPConfig(hidden_dims=[64, 128, 128, 64], kernel_sizes=[3, 3, 3, 3], num_layers=4))
-ModelRegistry.register_model('osl/Vivit', VivitDecoder, VivitConfig())
-ModelRegistry.register_model('osl/Vivit-s', VivitDecoder, VivitConfig(hidden_size=144))
+
+ModelRegistry.register_model('osl/vivit-decoder-l', VivitDecoder, VivitConfig(hidden_size=768)) # 89_822_979 params
+ModelRegistry.register_model('osl/vivit-decoder-s', VivitDecoder, VivitConfig(hidden_size=144)) # 12_558_675 params
+
+# ModelRegistry.register_model('osl/unet', Unet, UnetConfig(num_channels=3, init_dim=32, dim=32))  #   7_809_475 params
+# ModelRegistry.register_model('osl/unet', Unet, UnetConfig(num_channels=3, init_dim=32, dim=64))  #  30_189_891 params
+# ModelRegistry.register_model('osl/unet', Unet, UnetConfig(num_channels=3, init_dim=32, dim=128)) # 118_669_315 params
+
+ModelRegistry.register_model('osl/interpolator-s', Unet, UnetConfig(num_channels=6, init_dim=32, dim=32))  #   7_814_179 params
+ModelRegistry.register_model('osl/interpolator-m', Unet, UnetConfig(num_channels=6, init_dim=32, dim=64))  #  30_194_595 params
+ModelRegistry.register_model('osl/interpolator-l', Unet, UnetConfig(num_channels=6, init_dim=32, dim=128)) # 118_674_019 params

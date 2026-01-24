@@ -229,7 +229,7 @@ class OceanSurfacePredictorConvLSTM(nn.Module):
 if __name__ == "__main__":
     # Test the model
     config = OSPConfig(seq_length=3)
-    model = OceanSurfacePredictorConvLSTM(config)
+    model = ConvLSTM(config)
 
     # Test input
     x = torch.randn(2, 3, 3, 224, 224)  # (batch, seq_len, channels, height, width)
