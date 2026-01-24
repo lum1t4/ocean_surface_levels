@@ -122,9 +122,10 @@ class VivitEmbeddings(nn.Module):
         B, _, _, H, W = pixel_values.shape
         embeddings = self.patch_embeddings(pixel_values, interpolate_pos_encoding=interpolate_pos_encoding)
         # TODO: evaluate a clever positional encoding strategy
-        # position_embeddings = self.position_embeddings(torch.arange(0, embeddings.shape[1], 1, dtype=torch.long))
-        # embeddings = embeddings + position_embeddings
-        # embeddings = self.dropout(embeddings)
+        device = pixel_values.device
+        position_embeddings = self.position_embeddings(torch.arange(0, embeddings.shape[1], 1, dtype=torch.long, device=device))
+        embeddings = embeddings + position_embeddings
+        embeddings = self.dropout(embeddings)
         return embeddings
 
 
