@@ -16,7 +16,7 @@ workers: 8
 device: "cpu"
 seed: 1337
 deterministic: false
-save_dir: "runs/convlstm"
+save_dir: "runs/"
 
 mode: 'min'
 monitor: 'valid/loss'
