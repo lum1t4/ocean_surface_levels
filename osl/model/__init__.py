@@ -3,6 +3,7 @@ from osl.model.segformer import SegformerConfig, SegformerForSemanticSegmentatio
 from osl.model.convlstm import OSPConfig, OceanSurfacePredictorConvLSTM
 from osl.model.vivit import VivitConfig, VivitDecoder
 from osl.model.resunet import Unet, UnetConfig
+from osl.model.simvp import SimVP, SimVPConfig
 
 __all__ = ['load_model']
 
@@ -24,6 +25,9 @@ ModelRegistry.register_model('osl/vivit-decoder-s', VivitDecoder, VivitConfig(hi
 # ModelRegistry.register_model('osl/unet', Unet, UnetConfig(num_channels=3, init_dim=32, dim=64))  #  30_189_891 params
 # ModelRegistry.register_model('osl/unet', Unet, UnetConfig(num_channels=3, init_dim=32, dim=128)) # 118_669_315 params
 
-ModelRegistry.register_model('osl/interpolator-s', Unet, UnetConfig(num_channels=6, init_dim=32, dim=32))  #   7_814_179 params
-ModelRegistry.register_model('osl/interpolator-m', Unet, UnetConfig(num_channels=6, init_dim=32, dim=64))  #  30_194_595 params
-ModelRegistry.register_model('osl/interpolator-l', Unet, UnetConfig(num_channels=6, init_dim=32, dim=128)) # 118_674_019 params
+# SimVP: Fully convolutional video prediction (no patch artifacts)
+# Note: temporal_module='conv' supports variable seq_length; 'inception'/'tau' require fixed seq_length
+ModelRegistry.register_model('osl/simvp-s', SimVP, SimVPConfig(hidden_dim=64, num_layers=4, temporal_module='conv', in_frames=16))
+ModelRegistry.register_model('osl/simvp-m', SimVP, SimVPConfig(hidden_dim=128, num_layers=4, temporal_module='conv', in_frames=16))
+ModelRegistry.register_model('osl/simvp-tau-s', SimVP, SimVPConfig(hidden_dim=64, num_layers=4, temporal_module='tau', in_frames=16))
+ModelRegistry.register_model('osl/simvp-inception-s', SimVP, SimVPConfig(hidden_dim=64, num_layers=4, temporal_module='inception', in_frames=16))
