@@ -4,6 +4,7 @@ from osl.model.convlstm import OSPConfig, OceanSurfacePredictorConvLSTM
 from osl.model.vivit import VivitConfig, VivitDecoder
 from osl.model.resunet import Unet, UnetConfig
 from osl.model.simvp import SimVP, SimVPConfig
+from osl.model.afno import AFNONet, AFNOConfig
 
 __all__ = ['load_model']
 
@@ -31,3 +32,8 @@ ModelRegistry.register_model('osl/simvp-s', SimVP, SimVPConfig(hidden_dim=64, nu
 ModelRegistry.register_model('osl/simvp-m', SimVP, SimVPConfig(hidden_dim=128, num_layers=4, temporal_module='conv', in_frames=16))
 ModelRegistry.register_model('osl/simvp-tau-s', SimVP, SimVPConfig(hidden_dim=64, num_layers=4, temporal_module='tau', in_frames=16))
 ModelRegistry.register_model('osl/simvp-inception-s', SimVP, SimVPConfig(hidden_dim=64, num_layers=4, temporal_module='inception', in_frames=16))
+
+# AFNO: Adaptive Fourier Neural Operator (spectral mixing, no patch artifacts)
+# Based on FourCastNet - excellent for periodic boundaries and multi-scale patterns
+ModelRegistry.register_model('osl/afno-s', AFNONet, AFNOConfig(hidden_dim=128, num_blocks=4, num_layers=4, in_frames=16))
+ModelRegistry.register_model('osl/afno-m', AFNONet, AFNOConfig(hidden_dim=256, num_blocks=8, num_layers=6, in_frames=16))
