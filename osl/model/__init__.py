@@ -35,5 +35,7 @@ ModelRegistry.register_model('osl/simvp-inception-s', SimVP, SimVPConfig(hidden_
 
 # AFNO: Adaptive Fourier Neural Operator (spectral mixing, no patch artifacts)
 # Based on FourCastNet - excellent for periodic boundaries and multi-scale patterns
+# Note: AFNO is memory intensive due to FFT; use smaller configs for 12GB VRAM
+ModelRegistry.register_model('osl/afno-xs', AFNONet, AFNOConfig(hidden_dim=64, num_blocks=4, num_layers=2, in_frames=16))
 ModelRegistry.register_model('osl/afno-s', AFNONet, AFNOConfig(hidden_dim=128, num_blocks=4, num_layers=4, in_frames=16))
 ModelRegistry.register_model('osl/afno-m', AFNONet, AFNOConfig(hidden_dim=256, num_blocks=8, num_layers=6, in_frames=16))
