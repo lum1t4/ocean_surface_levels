@@ -21,21 +21,3 @@ ModelRegistry.register_model('osl/convlstm-m', OceanSurfacePredictorConvLSTM, OS
 
 ModelRegistry.register_model('osl/vivit-decoder-l', VivitDecoder, VivitConfig(hidden_size=768)) # 89_822_979 params
 ModelRegistry.register_model('osl/vivit-decoder-s', VivitDecoder, VivitConfig(hidden_size=144)) # 12_558_675 params
-
-# ModelRegistry.register_model('osl/unet', Unet, UnetConfig(num_channels=3, init_dim=32, dim=32))  #   7_809_475 params
-# ModelRegistry.register_model('osl/unet', Unet, UnetConfig(num_channels=3, init_dim=32, dim=64))  #  30_189_891 params
-# ModelRegistry.register_model('osl/unet', Unet, UnetConfig(num_channels=3, init_dim=32, dim=128)) # 118_669_315 params
-
-# SimVP: Fully convolutional video prediction (no patch artifacts)
-# Note: temporal_module='conv' supports variable seq_length; 'inception'/'tau' require fixed seq_length
-ModelRegistry.register_model('osl/simvp-s', SimVP, SimVPConfig(hidden_dim=64, num_layers=4, temporal_module='conv', in_frames=16))
-ModelRegistry.register_model('osl/simvp-m', SimVP, SimVPConfig(hidden_dim=128, num_layers=4, temporal_module='conv', in_frames=16))
-ModelRegistry.register_model('osl/simvp-tau-s', SimVP, SimVPConfig(hidden_dim=64, num_layers=4, temporal_module='tau', in_frames=16))
-ModelRegistry.register_model('osl/simvp-inception-s', SimVP, SimVPConfig(hidden_dim=64, num_layers=4, temporal_module='inception', in_frames=16))
-
-# AFNO: Adaptive Fourier Neural Operator (spectral mixing, no patch artifacts)
-# Based on FourCastNet - excellent for periodic boundaries and multi-scale patterns
-# Note: AFNO is memory intensive due to FFT; use smaller configs for 12GB VRAM
-ModelRegistry.register_model('osl/afno-xs', AFNONet, AFNOConfig(hidden_dim=64, num_blocks=4, num_layers=2, in_frames=16))
-ModelRegistry.register_model('osl/afno-s', AFNONet, AFNOConfig(hidden_dim=128, num_blocks=4, num_layers=4, in_frames=16))
-ModelRegistry.register_model('osl/afno-m', AFNONet, AFNOConfig(hidden_dim=256, num_blocks=8, num_layers=6, in_frames=16))

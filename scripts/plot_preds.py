@@ -24,46 +24,63 @@ from osl.core.utils import IterableSimpleNamespace, yaml_load
 from osl.model.registry import load_model
 import pandas as pd
 from torch.nn.functional import interpolate
-
+from copy import deepcopy
 
 def main(config: IterableSimpleNamespace):
     dataset = xr.open_dataset(config.dataset)
+    
     device = torch.device(config.device)
-    seq_s = datetime.fromisoformat(config.start_date)
-    seq_e = datetime.fromisoformat(config.end_date)
-    dataset = dataset.sel(time=slice(seq_s, seq_e))
+    dataset = dataset.sel(time=slice(
+        datetime.fromisoformat(config.start_date),
+        datetime.fromisoformat(config.end_date)
+    ))
+
     model = load_model(config.model, config={'num_labels': 3}, weights=config.weights).to(device)
     model.eval()
-    length = len(dataset.time)
 
-    output = Path(config.output)
-    output.parent.mkdir(parents=True, exist_ok=True)
+    destination = Path(config.output)
+    destination.parent.mkdir(parents=True, exist_ok=True)
 
-    vmin = np.nanmin(dataset.sla)
-    vmax = np.nanmax(dataset.sla)
+    vmin = np.nanmin(dataset[config.variables[0]])
+    vmax = np.nanmax(dataset[config.variables[0]])
     lon = dataset.longitude.values
     lat = dataset.latitude.values
 
-
-    def read_sample(dataset: xr.Dataset, index: int):
-        values = [dataset[v][index] for v in config.variables]
-        values = np.stack(values)
-        return np.ascontiguousarray(values)
+    T = config.seq_length
+    window_size = len(dataset.time)
 
 
-    def predict(x: np.ndarray):
-        # x numpy ndarray [3, 224, 224]
-        # y torch tensor  [3, 224, 224]
-        inputs = torch.from_numpy(np.nan_to_num(x, nan=0.0).astype(np.float32)).unsqueeze(0).to(device)
-        with torch.inference_mode():
-            B, C, H, W = inputs.shape
-            outputs = model(inputs)
-            outputs = interpolate(outputs, size=x.shape[-2:], mode="bilinear", align_corners=False)
-        return outputs.squeeze().cpu().numpy()
+    assert T > 0, "Sequence length should be positive and greater than zero."
+    assert window_size > T, "Selected time range must be longer than sequence length."
 
+    # -----------------------
+    # Generate predictions
+    # -----------------------
+    inputs = [dataset[v][0:T] for v in config.variables]
+    inputs = np.nan_to_num(np.stack(inputs, 1), nan=0.0) # -> (T, C, H, W)
+    inputs = torch.from_numpy(inputs).to(device, dtype=torch.float32)
+    inputs = inputs.unsqueeze(0) if T > 1 else inputs
 
-    x = read_sample(dataset, 0)
-    y = x
+    output = []
+    with torch.inference_mode():
+        for i in range(window_size - T):
+            preds = model(inputs)
+
+            B = preds.shape[0]
+            C, H, W = preds.shape[-3:]
+            preds = preds.view(B * T, C, H, W)
+            preds = interpolate(preds, size=inputs.shape[-2:], mode="bilinear", align_corners=False)
+            preds = preds.view(B, T, C, H, W) if T > 1 else preds
+
+            inputs = preds
+            prediction = preds[0, -1, 0] if T > 1 else preds[0, 0]
+            prediction = deepcopy(prediction).cpu().numpy()
+            output.append(prediction)
+
+    # -----------------------
+    # Plot schema
+    # -----------------------
+    ground = np.ascontiguousarray(dataset.sla[T:])
 
     fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(16, 9), dpi=150, subplot_kw={"projection": ccrs.PlateCarree()})
     for ax in axes:
@@ -74,19 +91,16 @@ def main(config: IterableSimpleNamespace):
     axes[0].set_title("Original (SLA)")
     axes[1].set_title("Generated (SLA)")
 
-    mesh0 = axes[0].pcolormesh(lon, lat, np.zeros_like(x[0]), vmin=vmin, vmax=vmax, cmap=cmocean.cm.balance, transform=ccrs.PlateCarree())
-    mesh1 = axes[1].pcolormesh(lon, lat, np.zeros_like(x[0]), vmin=vmin, vmax=vmax, cmap=cmocean.cm.balance, transform=ccrs.PlateCarree())
+    mesh0 = axes[0].pcolormesh(lon, lat, np.zeros_like(ground[0]), vmin=vmin, vmax=vmax, cmap=cmocean.cm.balance, transform=ccrs.PlateCarree())
+    mesh1 = axes[1].pcolormesh(lon, lat, np.zeros_like(ground[0]), vmin=vmin, vmax=vmax, cmap=cmocean.cm.balance, transform=ccrs.PlateCarree())
 
     title = fig.suptitle("")
 
-
     writer = FFMpegWriter(fps=10, codec="libx264", extra_args=["-pix_fmt", "yuv420p", "-preset", "fast"])
-    with writer.saving(fig, output.as_posix(), dpi=150):
-        for i in tqdm(range(length), desc="Rendering frames", unit="frame"):
-            mesh0.set_array(x[0].ravel())
-            mesh1.set_array(y[0].ravel())
-            x = read_sample(dataset, i)
-            y = predict(y)
+    with writer.saving(fig, destination.as_posix(), dpi=150):
+        for i in tqdm(range(window_size - T), desc="Rendering frames", unit="frame"):
+            mesh0.set_array(ground[i].ravel())
+            mesh1.set_array(output[i].ravel())
             title.set_text(np.datetime_as_string(dataset.time[i]))
             writer.grab_frame()
 
@@ -99,6 +113,7 @@ if __name__ == "__main__":
     # Data configuration
     parser.add_argument("--dataset", type=str, help="Path to dataset")
     parser.add_argument("--variables", type=str, nargs="+", help="Variables to use from the dataset")
+    parser.add_argument("--seq_length", type=int, help="Number of past steps for model input")
 
     # Model configuration
     parser.add_argument("--model", type=str, help="Model name")

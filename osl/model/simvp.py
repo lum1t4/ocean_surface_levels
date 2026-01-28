@@ -12,7 +12,6 @@ by using spatial convolutions instead of patch embeddings. The architecture cons
  - Temporal Module: Models temporal dynamics across frames
  - Spatial Decoder: Reconstructs output frames from features
 
-This design is well-suited for scientific spatiotemporal data like ocean currents.
 """
 
 import torch
