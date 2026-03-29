@@ -1,0 +1,12 @@
+# Dyffusion forecaster experiment
+name: 'dyffusion'
+model: 'dyffusion/tiny-forecaster'
+modality: 'dyffusion'
+stage: 'forecaster'
+
+interpolator: 'dyffusion/tiny-interpolator'
+interpolator_weights:
+
+seq_length: 8
+batch_size: 8
+save_dir: "runs/dyffusion/"

@@ -374,3 +374,4 @@ $RECYCLE.BIN/
 
 runs/
 wandb/
+data/interim/stats.json

@@ -1,15 +1,18 @@
 # Data configuration
 dataset: "data/raw/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D-224x224.nc"
-seq_length: 3
-seq_stride: 4
-variables: ["sla", "ugos", "vgos"]
+train: [0, 9188]
+valid: [9188, 11487]
 
-# Training configuration
-model: 'osl/convlstm-s'
-batch_size: 8
-lr: 0.001
+variables: ["sla"]
+normalize: true
+stats_path: "data/interim/stats.json"
+
+# Training defaults
+criterion: "mse"
+lr: 0.0003
 weight_decay: 0.00001
-epochs: 10
+epochs: 100
+grad_acc: 1
 
 # System configuration
 workers: 8
@@ -18,16 +21,14 @@ seed: 1337
 deterministic: false
 save_dir: "runs/"
 
-mode: 'min'
 monitor: 'valid/loss'
-
+mode: 'min'
 save_period: -1
-patience: 10
-
+patience: 20
 
 tracker:
 project: 'ocean surface level'
-name: 'run_000'
 
-
-
+# Plot video
+start_date: '2022-01-01'
+end_date: '2022-01-31'

@@ -88,6 +88,11 @@ def convert_optimizer_state_dict_to_fp16(state_dict):
     return state_dict
 
 
+
+# -------------------------
+# Device
+# -------------------------
+
 def device_memory_used(device: torch.device) -> float:
     """Get accelerator memory utilization in GB."""
     if device.type == "mps":
@@ -163,6 +168,10 @@ class InfiniteDataLoader(DataLoader):
         self.iterator = self._get_iterator()
 
 
+# -------------------------
+# Model
+# -------------------------
+
 def model_get_num_params(model: nn.Module):
     """Return the total number of parameters in a YOLO model."""
     return sum(x.numel() for x in model.parameters())
@@ -171,6 +180,19 @@ def model_get_num_params(model: nn.Module):
 def model_get_num_trainable_params(model: nn.Module):
     """Return the total number of parameters with gradients in a YOLO model."""
     return sum(x.numel() for x in model.parameters() if x.requires_grad)
+
+
+def is_parallel(model):
+    """Returns True if model is of type DP or DDP."""
+    return isinstance(
+        model, (nn.parallel.DataParallel, nn.parallel.DistributedDataParallel)
+    )
+
+
+def de_parallel(model):
+    """De-parallelize a model: returns single-GPU model if model is of type DP or DDP."""
+    return model.module if is_parallel(model) else model
+
 
 
 def fuse_conv_and_bn(conv, bn):
@@ -235,18 +257,6 @@ def fuse_deconv_and_bn(deconv, bn):
 
 
 
-def is_parallel(model):
-    """Returns True if model is of type DP or DDP."""
-    return isinstance(
-        model, (nn.parallel.DataParallel, nn.parallel.DistributedDataParallel)
-    )
-
-
-def de_parallel(model):
-    """De-parallelize a model: returns single-GPU model if model is of type DP or DDP."""
-    return model.module if is_parallel(model) else model
-
-
 def intersect_dicts(da, db, exclude=()):
     """Returns a dictionary of intersecting keys with matching shapes, excluding 'exclude' keys, using da values."""
     return {
@@ -276,9 +286,9 @@ class ModelEMA:
         """Create EMA."""
         self.ema = deepcopy(de_parallel(model)).eval()  # FP32 EMA
         self.updates = updates  # number of EMA updates
-        self.decay = lambda x: decay * (
-            1 - math.exp(-x / tau)
-        )  # decay exponential ramp (to help early epochs)
+
+        # decay exponential ramp (to help early epochs)
+        self.decay = lambda x: decay * (1 - math.exp(-x / tau))
         for p in self.ema.parameters():
             p.requires_grad_(False)
         self.enabled = True
@@ -611,3 +621,48 @@ def check_shape(x: Tensor, shape: list[str], raises: bool = True) -> bool:
             else:
                 return False
     return True
+
+
+
+def eager_attention_forward(
+    query: Tensor,
+    key: Tensor,
+    value: Tensor,
+    attn_mask: Tensor | None = None,
+    dropout_p: float = 0.0,
+    is_causal: bool = False,
+    scale: float | None = None,
+    enable_gqa: bool = False,
+    training: bool = True,
+):
+    L, S = query.size(-2), key.size(-2)
+    scale_factor = query.size(-1) ** -0.5 if scale is None else scale
+    attn_bias = torch.zeros(L, S, dtype=query.dtype, device=query.device)
+    if is_causal:
+        assert attn_mask is None
+        temp_mask = torch.ones(L, S, dtype=torch.bool, device=query.device).tril(diagonal=0)
+        attn_bias.masked_fill_(temp_mask.logical_not(), float("-inf"))
+
+    if attn_mask is not None:
+        attn_mask = attn_mask.to(query.device)
+        if attn_mask.dtype == torch.bool:
+            attn_bias.masked_fill_(attn_mask.logical_not(), float("-inf"))
+        else:
+            attn_bias = attn_mask + attn_bias
+
+    if enable_gqa:
+        key = key.repeat_interleave(query.size(-3)//key.size(-3), -3)
+        value = value.repeat_interleave(query.size(-3)//value.size(-3), -3)
+
+    attn_weight = query @ key.transpose(-2, -1) * scale_factor
+    attn_weight += attn_bias
+    attn_weight = torch.softmax(attn_weight, dim=-1)
+    attn_weight = nn.functional.dropout(attn_weight, p=dropout_p, training=training)
+    return attn_weight @ value
+
+
+scaled_dot_product = eager_attention_forward
+
+if torch.cuda.is_available():
+    torch.backends.cuda.enable_flash_sdp(enabled=torch.backends.cuda.is_flash_attention_available())
+    scaled_dot_product = nn.functional.scaled_dot_product_attention

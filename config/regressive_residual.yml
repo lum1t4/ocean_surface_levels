@@ -1,0 +1,22 @@
+# Residual autoregressive experiment
+name: "regressive-residual"
+model: "ForeViT/S"
+modality: "regressive"
+
+seq_length: 8
+seq_stride: 8
+batch_size: 8
+
+# Predict x_{t+k} - x_t by default. Switch to "previous" to predict
+# x_{t+k} - x_{t+k-1} instead.
+residual_mode: "first"
+
+augment: false
+augment_noise_start: 0.9
+augment_noise_end: 0.2
+augment_noise_schedule: "cosine"
+
+
+w_adv: 0.1
+disc_start: 2
+disc_lr: 0.001

@@ -141,29 +141,29 @@ class ConvLSTM(nn.Module):
 
 
 
-class OSPConfig(BaseModel):
-    input_channels: int = 3  # sla, ugos, vgos
+class AEConvLSTMConfig(BaseModel):
+    num_channels: int = 3  # sla, ugos, vgos
     hidden_dims: List[int] = [64, 128, 128, 64]
     kernel_sizes: List[int] = [3, 3, 3, 3]
     num_layers: int = 4
     seq_length: int = 3
 
 
-class OceanSurfacePredictorConvLSTM(nn.Module):
+class AEConvLSTM(nn.Module):
     """
     Ocean surface predictor using ConvLSTM architecture.
     Takes a sequence of ocean states and predicts future states.
     """
     
-    def __init__(self, config: OSPConfig):
+    def __init__(self, config: AEConvLSTMConfig):
         super().__init__()
         
-        self.input_channels = config.input_channels
+        self.input_channels = config.num_channels
         self.seq_length = config.seq_length
         
         # Encoder ConvLSTM
         self.encoder = ConvLSTM(
-            input_dim=config.input_channels,
+            input_dim=config.num_channels,
             hidden_dims=config.hidden_dims,
             kernel_sizes=config.kernel_sizes,
             num_layers=config.num_layers,
@@ -182,11 +182,8 @@ class OceanSurfacePredictorConvLSTM(nn.Module):
         )
         
         # Output projection
-        self.output_conv = nn.Conv2d(
-            config.hidden_dims[0],  # First element of reversed hidden_dims
-            config.input_channels,
-            kernel_size=1
-        )
+                            # First element of reversed hidden_dims
+        self.output_conv = nn.Conv2d(config.hidden_dims[0], config.num_channels, kernel_size=1)
         
     def forward(self, x):
         """
@@ -196,16 +193,13 @@ class OceanSurfacePredictorConvLSTM(nn.Module):
         Returns:
             Predicted tensor of shape (batch, seq_length, channels, height, width)
         """
-        batch_size, seq_len, _, height, width = x.shape
+        B, T, _, H, W = x.shape
 
         # Encode input sequence
         _, _ = self.encoder(x)
 
         # Initialize decoder input with zeros (predict same length as input)
-        decoder_input = torch.zeros(
-            batch_size, seq_len, self.encoder.hidden_dims[-1], height, width,
-            device=x.device, dtype=x.dtype
-        )
+        decoder_input = torch.zeros(B, T, self.encoder.hidden_dims[-1], H, W, device=x.device, dtype=x.dtype)
 
         # Decode to generate predictions
         decoder_output, _ = self.decoder(decoder_input, None)
@@ -217,7 +211,7 @@ class OceanSurfacePredictorConvLSTM(nn.Module):
 
         # Project to output channels
         output = []
-        for t in range(seq_len):
+        for t in range(T):
             out_t = self.output_conv(decoder_output[:, t])  # Apply conv to each timestep
             output.append(out_t)
 
@@ -228,7 +222,7 @@ class OceanSurfacePredictorConvLSTM(nn.Module):
 
 if __name__ == "__main__":
     # Test the model
-    config = OSPConfig(seq_length=3)
+    config = AEConvLSTMConfig(seq_length=3)
     model = ConvLSTM(config)
 
     # Test input

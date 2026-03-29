@@ -1,0 +1,10 @@
+# Progressive experiment
+name: 'progressive'
+model: 'DiT/T' # 'unet-time'
+modality: 'progressive'
+
+seq_length: 31
+seq_stride: 31
+batch_size: 64
+
+prediction_type: 'sample' # or epsilon

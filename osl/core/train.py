@@ -36,11 +36,21 @@ class TrainContext:
     train_loader: DataLoader
     valid_loader: DataLoader | None
     metrics: dict[str, Any] = {}
+
+    # Initial iteration/epoch (it is greater than zero when resuming the run)
     start_iter: int = 0
+    # Best iteration / epoch
     best_iter: int = 0
+    # Current iteration / epoch
     curr_iter: int = None
+    # Flag that changes when triggering early stopping
     stop: bool = False
+    # Run name (logging)
     name: str | None = None
+    # Enable automatic mixed precision
+    mixed_precision: bool = False
+    # Precision Type
+    precision: torch.dtype = torch.float32
 
     def __init__(self, config: IterableSimpleNamespace):
         # Enable TF32 for faster matmuls on Ampere+ GPUs
@@ -59,11 +69,27 @@ class TrainContext:
             torch.distributed.init_process_group(backend="nccl", timeout=timedelta(seconds=10800)) # 3 hours
             torch.cuda.set_device(LOCAL_RANK)
             self.device = torch.device(f"cuda:{LOCAL_RANK}")
+
         
         # Checks and patches on config
         if self.device.type in {"cpu", "mps"}:
             self.config.workers = 0
-            self.config.amp = False
+
+        self.configure_precision(config)
+
+
+    def configure_precision(self, config: IterableSimpleNamespace):
+        self.mixed_precision = getattr(config, "mixed_precision", True)
+        # Checks and patches on config
+        if self.device.type in {"cpu", "mps"}:
+            self.mixed_precision = False
+
+        value = getattr(config, "precision", "float32")
+        if value in {"float32", "FP32"}:
+                self.precision = torch.float32
+            
+        if value in {"bfloat16"}:
+                self.precision = torch.bfloat16
 
 
     @property
@@ -74,7 +100,7 @@ class TrainContext:
         return w
     
     @property
-    def plt_dir(self) -> Path:
+    def plot_dir(self) -> Path:
         name = self.config.name if self.config.name else self.config.model
         p = self.save_dir / name / 'plots'
         p.mkdir(parents=True, exist_ok=True)
@@ -92,15 +118,19 @@ class TrainContext:
     def current_checkpoint(self) -> Path:
         return self.weights_dir / f"epoch_{self.curr_iter}.pt"
 
-
     def iteration_end(self):
         gc.collect()
         device_memory_clear(self.device)
 
-
-
     @rank_zero_only
     def checkpointing(self):
+        # Update best iteration and best fitness
+        x = self.metrics[self.config.monitor]
+        y = self.fitness
+        if (self.config.mode == "max" and x >= y) or (self.config.mode == "min" and x <= y):
+            self.fitness = x
+            self.best_iter = self.curr_iter
+
         buffer = io.BytesIO()
         model = de_parallel(self.model) if WORLD_SIZE > 1 else self.model
         optim = convert_optimizer_state_dict_to_fp16(deepcopy(self.optimizer.state_dict()))
@@ -153,15 +183,8 @@ class TrainContext:
         if RANK in {-1, 0}:
             LOGGER.info(f"Transferred {len(csd)}/{len(self.model.state_dict())} items from pretrained weights")
         return self
-    
 
     def early_stopping(self):
-        x = self.metrics[self.config.monitor]
-        y = self.fitness
-        if (self.config.mode == "max" and x >= y) or (self.config.mode == "min" and x <= y):
-            self.fitness = x
-            self.best_iter = self.curr_iter
-
         if self.curr_iter - self.best_iter == self.config.patience:
             LOGGER.info(f"Triggered Early Stopping at epoch {self.curr_iter + 1}")
             self.stop = True

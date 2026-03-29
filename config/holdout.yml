@@ -1,0 +1,35 @@
+project: 'ocean surface level'
+tracker:
+
+# Data configuration
+dataset: "data/raw/cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.0625deg_P1D-224x224.nc"
+stats_path: "data/interim/stats.json"
+train: [0, 8040]
+valid: [8040, 9188]
+variables: ["sla"]
+normalize: true
+
+
+# Training defaults
+criterion: "mse"
+lr: 0.0003
+weight_decay: 0.00001
+epochs: 100
+patience: 20
+grad_acc: 1
+monitor: 'valid/loss'
+mode: 'min'
+save_period: -1
+
+
+# System configuration
+workers: 8
+device: "cpu"
+seed: 1337
+deterministic: false
+save_dir: "runs/"
+
+
+# Plot video
+start_date: '2022-01-01'
+end_date: '2022-01-31'

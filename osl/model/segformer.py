@@ -349,6 +349,8 @@ class SegformerMLP(nn.Module):
 class SegformerDecodeHead(nn.Module):
     def __init__(self, config: SegformerConfig):
         super().__init__()
+        self.config = config
+        
         self.linear_c = nn.ModuleList(
             [SegformerMLP(config, input_dim=dim) for dim in config.hidden_sizes]
         )
@@ -367,7 +369,7 @@ class SegformerDecodeHead(nn.Module):
             config.decoder_hidden_size, config.num_labels, kernel_size=1
         )
 
-        self.config = config
+        
 
     def forward(self, features):
         batch_size = features[-1].shape[0]

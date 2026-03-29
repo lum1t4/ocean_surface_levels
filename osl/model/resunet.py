@@ -20,8 +20,8 @@ from typing import Any, Callable
 # Config
 # --------------------- /
 class UnetConfig(BaseModel):
-    num_channels: int = 3
-    num_labels: int = 3
+    in_channels: int = 3
+    out_channels: int = 3
 
     # init_conv
     init_dim: int | None = None
@@ -223,7 +223,7 @@ class Unet(nn.Module):
         self.time_mlp = None
 
         init_dim = config.init_dim or (config.dim // 3 * 2)
-        self.init_conv = nn.Conv2d(config.num_channels, init_dim, *config.init_conv)
+        self.init_conv = nn.Conv2d(config.in_channels, init_dim, *config.init_conv)
         dims = [init_dim] + [config.dim * m for m in config.dim_mults]
         in_out = list(zip(dims[:-1], dims[1:]))
         block_class = partial(ResnetBlock, groups=config.num_block_groups)
@@ -273,7 +273,7 @@ class Unet(nn.Module):
 
         self.final_conv = nn.Sequential(
             block_class(config.dim, config.dim),
-            nn.Conv2d(config.dim, config.num_labels, 1)
+            nn.Conv2d(config.dim, config.out_channels, 1)
         )
 
     def forward(self, x: torch.Tensor, time: torch.Tensor | None = None) -> torch.Tensor:
@@ -302,3 +302,13 @@ class Unet(nn.Module):
             x = upsample(x)
 
         return self.final_conv(x)
+
+
+
+if __name__ == "__main__":
+    from osl.core.pytorch import model_get_num_params
+    config = UnetConfig(in_channels=1, out_channels=1, dim=16)
+    model = Unet(config)
+    print("model num params:", model_get_num_params(model))
+    img = torch.randn((1, 1, 224, 224))
+    out = model(img)

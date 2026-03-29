@@ -11,7 +11,7 @@ class Tracker:
         pass
 
     @rank_zero_only
-    def log(self, x: dict, step: int = None):
+    def log(self, x: dict, step: int | None = None):
         pass
 
     @rank_zero_only
@@ -63,7 +63,7 @@ try:
             )
 
         @rank_zero_only
-        def log(self, x, step: int = None):
+        def log(self, x, step: int | None = None):
             self.run.log(x, step=step)
 
         @rank_zero_only
